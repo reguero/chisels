@@ -138,7 +138,7 @@ function on_capture_start()
 	vizinfo.output_format = sysdig.get_output_format()
 
 	if islive then
-		chisel.set_interval_s(1)
+		chisel.set_interval_s(3600)
 		if vizinfo.output_format ~= "json" then
 			terminal.clearscreen()
 			terminal.hidecursor()
@@ -165,8 +165,10 @@ function on_event()
                         kv = '/cvmfs'
                 elseif string.find(kv, '^/tmp/') then
                         kv = '/tmp'
+                elseif string.find(kv, '^/') then
+                        kv = 'other disk'
                 else
-                        kv = 'other'
+                        kv = 'network'
                 end
 
 
@@ -178,6 +180,7 @@ function on_event()
 	end
 	
 	value = evt.field(fvalue)
+        -- print(string.format("value = %d",value))
 
 	if value ~= nil and value > 0 then
 		entryval = grtable[key]
@@ -194,11 +197,13 @@ end
 
 -- Periodic timeout callback
 function on_interval(ts_s, ts_ns, delta)	
-	if vizinfo.output_format ~= "json" then
-		terminal.clearscreen()
-		terminal.moveto(0, 0)
-	end
+--	if vizinfo.output_format ~= "json" then
+--		terminal.clearscreen()
+--		terminal.moveto(0, 0)
+--	end
 	
+        print(os.date("%H:%M:%S"))
+        print(string.format("delta = %f secs",delta/10^9))
 	print_sorted_table(grtable, ts_s, 0, delta, vizinfo)
 
 	-- Clear the table
@@ -216,6 +221,8 @@ function on_capture_end(ts_s, ts_ns, delta)
 -- 		return true
 -- 	end
 	
+        print(os.date("%H:%M:%S"))
+        print(string.format("delta = %f secs",delta/10^9))
 	print_sorted_table(grtable, ts_s, 0, delta, vizinfo)
 	
 	return true
